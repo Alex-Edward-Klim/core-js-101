@@ -119,34 +119,75 @@ function fromJSON(proto, json) {
 
 const cssSelectorBuilder = {
   output: '',
+  selectorPosition: 0,
 
-  element(/* value */) {
-    throw new Error('Not implemented');
+  element(value) {
+    this.checkOrder(1);
+    const newObject = Object.create(cssSelectorBuilder);
+    newObject.selectorPosition = 1;
+    newObject.output = `${this.output}${value}`;
+    return newObject;
   },
 
   id(value) {
-    this.output += value;
+    this.checkOrder(2);
+    const newObject = Object.create(cssSelectorBuilder);
+    newObject.selectorPosition = 2;
+    newObject.output = `${this.output}#${value}`;
+    return newObject;
+  },
+
+  class(value) {
+    this.checkOrder(3);
+    const newObject = Object.create(cssSelectorBuilder);
+    newObject.selectorPosition = 3;
+    newObject.output = `${this.output}.${value}`;
+    return newObject;
+  },
+
+  attr(value) {
+    this.checkOrder(4);
+    const newObject = Object.create(cssSelectorBuilder);
+    newObject.selectorPosition = 4;
+    newObject.output = `${this.output}[${value}]`;
+    return newObject;
+  },
+
+  pseudoClass(value) {
+    this.checkOrder(5);
+    const newObject = Object.create(cssSelectorBuilder);
+    newObject.selectorPosition = 5;
+    newObject.output = `${this.output}:${value}`;
+    return newObject;
+  },
+
+  pseudoElement(value) {
+    this.checkOrder(6);
+    const newObject = Object.create(cssSelectorBuilder);
+    newObject.selectorPosition = 6;
+    newObject.output = `${this.output}::${value}`;
+    return newObject;
+  },
+
+  combine(selector1, combinator, selector2) {
+    const newObject = Object.create(cssSelectorBuilder);
+    newObject.output = `${selector1.output} ${combinator} ${selector2.output}`;
+    return newObject;
+  },
+
+  checkOrder(position) {
+    if (this.selectorPosition === position
+      && (position === 1 || position === 2 || position === 6)) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+
+    if (this.selectorPosition > position) {
+      throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+  },
+
+  stringify() {
     return this.output;
-  },
-
-  class(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  attr(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
   },
 };
 
